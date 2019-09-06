@@ -1,0 +1,24 @@
+---
+- hosts: all
+  become: yes
+  become_user: root
+  become_method: sudo
+
+  tasks:
+    - name: Creates directory
+      file: 
+        path: "/var/www/html"
+        state: directory
+    - name: ensure apache,php related packages are installed
+      yum: name={{ item }} state=present
+      with_items:
+          - httpd
+          - php
+          - php-pgsql.x86_64
+    - name: ensure apache is running
+      service: name=httpd state=started enabled=yes
+
+    - name: copy application code to document root
+      template: src=./files/test.php dest=/var/www/html/index.php
+      notify: Restart apache
+
